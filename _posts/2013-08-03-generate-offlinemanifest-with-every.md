@@ -8,5 +8,154 @@ thumbnail: http://2.bp.blogspot.com/-oYfAvcuLg0g/UfyYk2Jz2RI/AAAAAAAAAIw/gCG8Kb5
 blogger_id: tag:blogger.com,1999:blog-7932117927902690732.post-2251784418726999096
 blogger_orig_url: http://www.code-thrill.com/2013/08/generate-offlinemanifest-with-every.html
 ---
+<h2>Introduction</h2> 
 
-<h2>Introduction</h2> <a href="http://2.bp.blogspot.com/-oYfAvcuLg0g/UfyYk2Jz2RI/AAAAAAAAAIw/gCG8Kb5wpIU/s1600/HTML5-logo.png" imageanchor="1" style="clear:left; float:left;margin-right:1em; margin-bottom:1em"><img border="0" src="http://2.bp.blogspot.com/-oYfAvcuLg0g/UfyYk2Jz2RI/AAAAAAAAAIw/gCG8Kb5wpIU/s1600/HTML5-logo.png" /></a> <p>In this post I will explain how to automatically generate a list of web resources for HTML5 offline caching. To keep the story short, you need to specify all CSS, JS, etc. in a manifest file. Then the browser will know that it needs to store them in cache. When you disconnect from the Internet, it will use those files instead of complaining about no connection available.</p> <div class="my-info" style="float: left">You can read more about building offline websites <a href="http://diveintohtml5.info/offline.html">here</a>. </div> <a name='more'></a> <h2>Project structure</h2> <p>Lets assume you're using Maven and your project structure looks something like this:</p> <pre class="brush:plain; gutter:false;"><br />|<br />+- src/<br />|  |<br />|  +- main/<br />|     |<br />|     +- webapp/<br />|        |<br />|        +- js/<br />|        |  |<br />|        |  +- ...a bunch of JS files<br />|        |<br />|        +- css/<br />|        |  |<br />|        |  +-...a bunch of CSS files<br />|        |<br />|        +- WEB-INF/<br />|        |  |<br />|        |  +- web.xml<br />|        |<br />|        +- offline.manifest<br />|        +- index.html<br />|<br />+- build.xml<br />+- pom.xml<br /></pre> <h2><cite>index.html</cite></h2> <p>To enable offline mode every html file of your website needs to include offline manifest. For example this is how <cite>index.html</cite> would look:</p><pre class="brush:html; gutter:false;"><br />&lt;!DOCTYPE html&gt;<br />&lt;html manifest="/offline.manifest"&gt;<br />  ...<br />&lt;/html&gt;<br /></pre> <h2><cite>offline.manifest</cite></h2> <p><cite>offline.manifest</cite> looks something like this:</p><pre class="brush:plain; gutter:false;"><br />CACHE MANIFEST<br /># 01/08/2013 16:00:00<br />/css/first.css<br />/css/second.css<br />...<br />/js/first.js<br />/js/second.js<br />...<br /></pre> <p>It is a good practice to add some form of a timestamp during every build (<cite># 01/08/2013 16:00:00</cite>). By doing this you let the browser know that it needs to reload the cached resources. Otherwise, if one of your files changes, but it is not a new file and the name haven't changed, there is a good chance it won't be reloaded.</p> <p>We could add files manually to the <cite>offline.manifest</cite>, but that's quite error-prone. You can easily forget to add a file and then the offline mode won't work in a particular case. It's usually better to automatically generate it. Here we will use Apache Ant. The script logic will be placed in the <cite>build.xml</cite>.</p> <h2><cite>build.xml</cite></h2> <p>If you execute ant from the project directory:</p> <pre class="brush:plain; gutter:false;"><br />/path/to/your/project$ ant <br /></pre> <p>it will automatically execute the <cite>generate-offline-manifest</cite> target:</p> <pre class="brush:xml; gutter:false;"><br />&lt;?xml version="1.0" encoding="UTF-8"?&gt;<br />&lt;project name="my-project" default="generate-offline-manifest"&gt;<br />    &lt;target name="generate-offline-manifest"&gt;<br />        &lt;property name="webapp-dir" value="${basedir}/src/main/webapp"/&gt;<br /><br />        &lt;!-- <br />                * pathsep -> separate files with new lines <br />                * targetos -> make sure our files contain slashes (/) <br />                              instead of windows backslashes (\) <br />        --&gt;<br />        &lt;pathconvert property="list-of-files" pathsep="&amp;&#35;xA;" targetos="unix"&gt;<br />            &lt;fileset dir="${webapp-dir}" &gt;<br />                &lt;include name="css/**/*" /&gt;<br />                &lt;include name="js/**/*" /&gt;<br />            &lt;/fileset&gt;<br /><br />            &lt;!-- make the path relative to the webappp dir (remove the absolute part) --&gt;<br />            &lt;map from="${webapp-dir}" to=""/&gt;<br />        &lt;/pathconvert&gt;<br /><br />        &lt;tstamp&gt;<br />            &lt;!-- generate timestamp - value will be stored in generation-time property --&gt;<br />            &lt;format property="generation-time" pattern="dd/MM/yyyy hh:mm:ss" /&gt;<br />        &lt;/tstamp&gt;<br /><br />        &lt;!-- generate the offline.manifest --&gt;<br />        &lt;echo file="${webapp-dir}/offline.manifest"&gt;CACHE MANIFEST<br /># ${generation-time}<br />${list-of-files}&lt;/echo&gt;<br />    &lt;/target&gt;<br />&lt;/project&gt;<br /></pre> <h2><cite>pom.xml</cite></h2> <p>In order to generate the <cite>offline.manifest</cite> every time the <cite>.war</cite> file is created, you can invoke the <cite>build.xml</cite> in your Maven build, during the prepare-package phase. You can accomplish this by adding the following snippet to your pom.xml:</p> <pre class="brush:xml; gutter:false;"><br />&lt;project&gt;<br />    ...<br />    &lt;build&gt;<br />        ...<br />        &lt;plugins&gt;<br />            ...<br />            &lt;plugin&gt;<br />                &lt;artifactId&gt;maven-antrun-plugin&lt;/artifactId&gt;<br />                &lt;version&gt;1.7&lt;/version&gt;<br />                &lt;executions&gt;<br />                    &lt;execution&gt;<br />                        &lt;phase&gt;prepare-package&lt;/phase&gt;<br />                        &lt;goals&gt;<br />                            &lt;goal&gt;run&lt;/goal&gt;<br />                        &lt;/goals&gt;<br />                        &lt;configuration&gt;<br />                            &lt;target&gt;<br />                                &lt;ant antfile="${basedir}/build.xml"&gt;<br />                                    &lt;target name="generate-offline-manifest"/&gt;<br />                                &lt;/ant&gt;<br />                            &lt;/target&gt;<br />                        &lt;/configuration&gt;<br />                    &lt;/execution&gt;<br />                &lt;/executions&gt;<br />            &lt;/plugin&gt;<br />        &lt;/plugins&gt;<br />    &lt;/build&gt;<br />&lt;/project&gt;<br /></pre> <h2>The End</h2> <p>I hope you found this micro-tutorial useful. Happy coding!</p>
+<img title="HTML5 logo" src="/images/generate-offline-manifest-with-every-java-build/HTML5-logo.png" class="float-left" /> 
+
+<p>In this post I will explain how to automatically generate a list of web resources for HTML5 offline caching. To keep the story short, you need to specify all CSS, JS, etc. in a manifest file. Then the browser will know that it needs to store them in cache. When you disconnect from the Internet, it will use those files instead of complaining about no connection available.</p> 
+
+<div class="my-info" style="float: left;">You can read more about building offline websites <a href="http://diveintohtml5.info/offline.html">here</a>. </div>
+
+<h2 style="clear: both;">Project structure</h2> 
+
+<p>Lets assume you're using Maven and your project structure looks something like this:</p> 
+
+{% highlight text %}
+|
++- src/
+|  |
+|  +- main/
+|     |
+|     +- webapp/
+|        |
+|        +- js/
+|        |  |
+|        |  +- ...a bunch of JS files
+|        |
+|        +- css/
+|        |  |
+|        |  +-...a bunch of CSS files
+|        |
+|        +- WEB-INF/
+|        |  |
+|        |  +- web.xml
+|        |
+|        +- offline.manifest
+|        +- index.html
+|
++- build.xml
++- pom.xml
+{% endhighlight %}
+
+<h2><cite>index.html</cite></h2> 
+
+<p>To enable offline mode every html file of your website needs to include offline manifest. For example this is how <cite>index.html</cite> would look:</p>
+
+{% highlight html %}
+<!DOCTYPE html>
+<html manifest="/offline.manifest">
+  ...
+</html>
+{% endhighlight %}
+
+<h2><cite>offline.manifest</cite></h2> 
+
+<p><cite>offline.manifest</cite> looks something like this:</p>
+
+{% highlight text %}
+CACHE MANIFEST
+# 01/08/2013 16:00:00
+/css/first.css
+/css/second.css
+...
+/js/first.js
+/js/second.js
+...
+{% endhighlight %}
+
+<p>It is a good practice to add some form of a timestamp during every build (<cite># 01/08/2013 16:00:00</cite>). By doing this you let the browser know that it needs to reload the cached resources. Otherwise, if one of your files changes, but it is not a new file and the name haven't changed, there is a good chance it won't be reloaded.</p> 
+
+<p>We could add files manually to the <cite>offline.manifest</cite>, but that's quite error-prone. You can easily forget to add a file and then the offline mode won't work in a particular case. It's usually better to automatically generate it. Here we will use Apache Ant. The script logic will be placed in the <cite>build.xml</cite>.</p> 
+
+<h2><cite>build.xml</cite></h2> 
+
+<p>If you execute ant from the project directory:</p> 
+
+{% highlight text %}
+/path/to/your/project$ ant 
+{% endhighlight %}
+
+<p>it will automatically execute the <cite>generate-offline-manifest</cite> target:</p> 
+
+{% highlight xml %}
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="my-project" default="generate-offline-manifest">
+    <target name="generate-offline-manifest">
+        <property name="webapp-dir" value="${basedir}/src/main/webapp"/>
+
+        <!-- 
+                * pathsep -> separate files with new lines 
+                * targetos -> make sure our files contain slashes (/) 
+                              instead of windows backslashes (\) 
+        -->
+        <pathconvert property="list-of-files" pathsep="&#xA;" targetos="unix">
+            <fileset dir="${webapp-dir}" >
+                <include name="css/**/*" />
+                <include name="js/**/*" />
+            </fileset>
+
+            <!-- make the path relative to the webappp dir (remove the absolute part) -->
+            <map from="${webapp-dir}" to=""/>
+        </pathconvert>
+
+        <tstamp>
+            <!-- generate timestamp - value will be stored in generation-time property -->
+            <format property="generation-time" pattern="dd/MM/yyyy hh:mm:ss" />
+        </tstamp>
+
+        <!-- generate the offline.manifest -->
+        <echo file="${webapp-dir}/offline.manifest">CACHE MANIFEST
+# ${generation-time}
+${list-of-files}</echo>
+    </target>
+</project>
+{% endhighlight %}
+
+<h2><cite>pom.xml</cite></h2> 
+
+<p>In order to generate the <cite>offline.manifest</cite> every time the <cite>.war</cite> file is created, you can invoke the <cite>build.xml</cite> in your Maven build, during the prepare-package phase. You can accomplish this by adding the following snippet to your pom.xml:</p> 
+
+{% highlight xml %}
+<project>
+    ...
+    <build>
+        ...
+        <plugins>
+            ...
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <ant antfile="${basedir}/build.xml">
+                                    <target name="generate-offline-manifest"/>
+                                </ant>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+{% endhighlight %}
+
+<h2>The End</h2> 
+
+<p>I hope you found this micro-tutorial useful. Happy coding!</p>

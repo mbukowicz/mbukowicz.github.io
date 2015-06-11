@@ -8,5 +8,340 @@ thumbnail: http://3.bp.blogspot.com/-U5BAUMAbXEY/Uk7pYScBYRI/AAAAAAAAAJM/_2kpvpK
 blogger_id: tag:blogger.com,1999:blog-7932117927902690732.post-2504159450226512161
 blogger_orig_url: http://www.code-thrill.com/2013/10/asynchronous-message-exchange-with.html
 ---
+<h2>Introduction</h2> 
 
-<h2>Introduction</h2> <div class="separator" style="clear: both; text-align: center;"><a href="http://3.bp.blogspot.com/-U5BAUMAbXEY/Uk7pYScBYRI/AAAAAAAAAJM/_2kpvpKLf3M/s1600/apache-camel.png" imageanchor="1" style="clear: left; float: left; margin-bottom: 1em; margin-right: 1em;"><img border="0" src="http://3.bp.blogspot.com/-U5BAUMAbXEY/Uk7pYScBYRI/AAAAAAAAAJM/_2kpvpKLf3M/s1600/apache-camel.png" /></a></div> <p>In this post I will show you how to get started with Apache Camel. Apache Camel is an integration technology, that enables you to connect different systems with different endpoint types. For example requests from system A exposed through RESTful WebService could be transformed and pushed to system B accessible through SOAP WebService.</p> <div class="my-info" style="display: inline-block;">You can read more about the types of endpoints <a href="http://camel.apache.org/components.html">here</a>. </div> <p>To learn the basics we are going to build the following system:</p> <a href="http://2.bp.blogspot.com/-yyZmmUdt0DU/Uk7qndZj3MI/AAAAAAAAAJU/dgqRze00azU/s1600/architecture_diagram_big_picture.png" imageanchor="1" ><img border="0" src="http://2.bp.blogspot.com/-yyZmmUdt0DU/Uk7qndZj3MI/AAAAAAAAAJU/dgqRze00azU/s1600/architecture_diagram_big_picture.png" /></a> <p>As you can see, it is a standard two-way message exchange (request-response). Here is the sequence of steps in our application: <ol>  <li>User requests the servlet.</li>  <li>Servlet pushes the request to the messaging queue and hangs waiting for the response.</li>  <li>On the other side a message processor pops the message from the queue and processes the request.</li>  <li>When the answer is ready it is pushed back to the messaging queue.</li>  <li>Servlet receives the response from the messaging system and shows the result to the user.</li></ol></p> <div class="my-info" style="float: left">TLDR; You can skip the blog entry and jump right away to the source code <a href="https://github.com/mbukowicz/Learning-Apache-Camel">posted on GitHub</a>. </div> <a name='more'></a> <h2>More details</h2> <p>Here is a more detailed view of the flow:</p> <div class="separator" style="clear: both; text-align: center;"><a href="http://1.bp.blogspot.com/-FCwxeMpZOcA/Uk71Oal7sqI/AAAAAAAAAJk/r6eqHP1MGRg/s1600/architecture_diagram.png" imageanchor="1" style="clear: left; float: left; margin-bottom: 1em; margin-right: 1em;"><img border="0" src="http://1.bp.blogspot.com/-FCwxeMpZOcA/Uk71Oal7sqI/AAAAAAAAAJk/r6eqHP1MGRg/s1600/architecture_diagram.png" /></a></div> <ol style="clear: both">  <li>ExampleServlet calls Camel route called "direct:inbox" and hangs waiting for a response.</li>  <li>The route moves the request to a queue named "outbox".</li>  <li>The other route listening on the "outbox" queue pops the message.</li>  <li>Then the message goes through the connection spawned from the pool.</li>  <li>Finally the process method on the ExampleProcessor class gets called.</li>  <li>ExampleProcessor using the input body prepares response and pushes it back.</li>  <li>The message goes further through a JMS connection...</li>  <li>...and is put on the reply queue.</li>  <li>Based on the id number of the message Apache Camel knows it received response for the request sent in the first step.</li>  <li>ExampleServlet receives the response.</li></ol> <p>Once we learned the flow lets plan our TO-DO list:</p><ul>  <li>Configure Maven dependencies</li>  <li>Load Spring Camel configuration from the web.xml</li>  <li>Configure Apache Camel routes</li>  <li>Implement ExampleServlet</li>  <li>Implement ExampleProcessor</li>  <li>Configure ActiveMQ embedded server (broker)</li>  <li>Configure ActiveMQ JMS Connection Pool</li></ul> <h2>Configure Maven dependencies</h2><p>Here are the dependencies that should be added to the <strong>pom.xml</strong>:</p><pre class="brush:xml; gutter:false;"><br />&lt;project&gt;<br />    ...<br />    &lt;properties&gt;<br />        &lt;camel.version&gt;2.11.0&lt;/camel.version&gt;<br />        &lt;activemq.version&gt;5.8.0&lt;/activemq.version&gt;<br />        &lt;xbean.version&gt;3.13&lt;/xbean.version&gt;<br />        &lt;spring.version&gt;3.1.4.RELEASE&lt;/spring.version&gt;<br />        &lt;servlet.version&gt;2.5&lt;/servlet.version&gt;<br />    &lt;/properties&gt;<br />    ...<br />    &lt;dependencies&gt;<br />        &lt;!-- Apache Camel --&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.camel&lt;/groupId&gt;<br />            &lt;artifactId&gt;camel-core&lt;/artifactId&gt;<br />            &lt;version&gt;${camel.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.camel&lt;/groupId&gt;<br />            &lt;artifactId&gt;camel-jms&lt;/artifactId&gt;<br />            &lt;version&gt;${camel.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.camel&lt;/groupId&gt;<br />            &lt;artifactId&gt;camel-spring&lt;/artifactId&gt;<br />            &lt;version&gt;${camel.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br /><br />        &lt;!-- Servlets --&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;javax.servlet&lt;/groupId&gt;<br />            &lt;artifactId&gt;servlet-api&lt;/artifactId&gt;<br />            &lt;version&gt;${servlet.version}&lt;/version&gt;<br />            &lt;scope&gt;provided&lt;/scope&gt;<br />        &lt;/dependency&gt;<br /><br />        &lt;!-- the ActiveMQ client with connection pooling --&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.activemq&lt;/groupId&gt;<br />            &lt;artifactId&gt;activemq-client&lt;/artifactId&gt;<br />            &lt;version&gt;${activemq.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.activemq&lt;/groupId&gt;<br />            &lt;artifactId&gt;activemq-camel&lt;/artifactId&gt;<br />            &lt;version&gt;${activemq.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.activemq&lt;/groupId&gt;<br />            &lt;artifactId&gt;activemq-pool&lt;/artifactId&gt;<br />            &lt;version&gt;${activemq.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br /><br />        &lt;!-- the ActiveMQ broker (embedded ActiveMQ) --&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.activemq&lt;/groupId&gt;<br />            &lt;artifactId&gt;activemq-broker&lt;/artifactId&gt;<br />            &lt;version&gt;${activemq.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.activemq&lt;/groupId&gt;<br />            &lt;artifactId&gt;activemq-spring&lt;/artifactId&gt;<br />            &lt;version&gt;${activemq.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.activemq&lt;/groupId&gt;<br />            &lt;artifactId&gt;activemq-pool&lt;/artifactId&gt;<br />            &lt;version&gt;${activemq.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.activemq&lt;/groupId&gt;<br />            &lt;artifactId&gt;activemq-kahadb-store&lt;/artifactId&gt;<br />            &lt;version&gt;${activemq.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br /><br />        &lt;!-- Spring --&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.apache.xbean&lt;/groupId&gt;<br />            &lt;artifactId&gt;xbean-spring&lt;/artifactId&gt;<br />            &lt;version&gt;${xbean.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.springframework&lt;/groupId&gt;<br />            &lt;artifactId&gt;spring-context&lt;/artifactId&gt;<br />            &lt;version&gt;${spring.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />        &lt;dependency&gt;<br />            &lt;groupId&gt;org.springframework&lt;/groupId&gt;<br />            &lt;artifactId&gt;spring-web&lt;/artifactId&gt;<br />            &lt;version&gt;${spring.version}&lt;/version&gt;<br />        &lt;/dependency&gt;<br />    &lt;/dependencies&gt;<br />    ...<br />&lt;/project&gt;<br /></pre> <h2>Loading Spring Camel configuration</h2><p>To load Camel Spring configuration lets put a standard Spring Context loader inside <strong>web.xml</strong>:</p><pre class="brush:xml; gutter:false;"><br />&lt;web-app&gt;<br />    ...<br />    &lt;context-param&gt;<br />        &lt;param-name&gt;contextConfigLocation&lt;/param-name&gt;<br />        &lt;param-value&gt;classpath:camel-config.xml&lt;/param-value&gt;<br />    &lt;/context-param&gt;<br />    &lt;listener&gt;<br />        &lt;listener-class&gt;org.springframework.web.context.ContextLoaderListener&lt;/listener-class&gt;<br />    &lt;/listener&gt;<br />    ...<br />&lt;/web-app&gt;<br /></pre> <h2>Apache Camel routes</h2><p>Below are the routes that represent the flow in our system. The entry point is the <strong>direct:inbox</strong> route, which will be called from the servlet. When a route starts with <strong>direct:</strong> it means you can call it directly from your Java code. On the other side, if you want to have Java code as your target endpoint (like with ExampleProcessor) then your class needs to implement the <strong>org.apache.camel.Processor</strong>.</p><pre class="brush:xml; gutter:false;"><br />&lt;beans&gt;<br />    &lt;import resource="classpath:activemq-connection-factory.xml" /&gt;<br />    &lt;import resource="classpath:activemq-embedded.xml" /&gt;<br /><br />    &lt;camelContext id="exampleCamelContext" xmlns="http://camel.apache.org/schema/spring"&gt;<br />        &lt;template id="exampleProducerTemplate" /&gt;<br /><br />        &lt;route&gt;<br />            &lt;from uri="direct:inbox"/&gt;<br />            &lt;to uri="activemq:queue:outbox" /&gt;<br />        &lt;/route&gt;<br /><br />        &lt;route&gt;<br />            &lt;from uri="activemq:queue:outbox" /&gt;<br />            &lt;to uri="exampleProcessor" /&gt;<br />        &lt;/route&gt;<br />    &lt;/camelContext&gt;<br /><br />    &lt;bean id="exampleProcessor" class="example.ExampleProcessor" /&gt;<br />&lt;/beans&gt;<br /></pre> <h2>ExampleServlet</h2><p>Here is the servlet that calls <strong>direct:inbox</strong> route using <strong>ProducerTemplate</strong> provided by Camel:</p><pre class="brush:java; gutter:false;"><br />public class ExampleServlet extends HttpServlet {<br /><br />    private static final String DEFAULT_NAME = "World";<br /><br />    private ProducerTemplate producer;<br /><br />    @Override<br />    public void init() throws ServletException {<br />        producer = getSpringContext().getBean(<br />                       "exampleProducerTemplate", ProducerTemplate.class);<br />    }<br /><br />    @Override<br />    public void service(ServletRequest req, ServletResponse res) <br />        throws ServletException, IOException {<br />        <br />        HttpServletRequest request = (HttpServletRequest) req;<br />        HttpServletResponse response = (HttpServletResponse) res;<br /><br />        String endpoint = "direct:inbox";<br />        String input = getName(request);<br />        String output = producer.requestBody(endpoint, input, String.class);<br /><br />        response.getOutputStream().println(output);<br />    }<br /><br />    private String getName(HttpServletRequest request) {<br />        String name = request.getParameter("name");<br />        if(name != null) {<br />            return name;<br />        }<br />        return DEFAULT_NAME;<br />    }<br /><br />    private WebApplicationContext getSpringContext() {<br />        ServletContext servletContext = getServletContext();<br />        WebApplicationContext context = WebApplicationContextUtils.<br />            getRequiredWebApplicationContext(servletContext);<br />        return context;<br />    }<br />}<br /></pre> <h2>ExampleProcessor</h2><p>ExampleProcessor is responsible for receiving a request and creating a response:</p><pre class="brush:java; gutter:false;"><br />public class ExampleProcessor implements org.apache.camel.Processor {<br /><br />    @Override<br />    public void process(Exchange exchange) throws Exception {<br />        String name = exchange.getIn().getBody(String.class);<br /><br />        String response = "Hello, " + name + "!";<br /><br />        exchange.getOut().setBody(response);<br />    }<br />}<br /></pre> <h2>ActiveMQ embedded broker</h2><p>Below is the configuration of the embedded ActiveMQ (<strong>activemq-embedded.xml</strong>):</p><pre class="brush:xml; gutter:false;"><br />&lt;beans&gt;<br />    &lt;broker id="broker" brokerName="myBroker" useShutdownHook="false" useJmx="true"<br />            persistent="false" dataDirectory="activemq-data"<br />            xmlns="http://activemq.apache.org/schema/core"&gt;<br />        &lt;transportConnectors&gt;<br />            &lt;transportConnector name="vm" uri="vm://myBroker"/&gt;<br />            &lt;transportConnector name="tcp" uri="tcp://0.0.0.0:61616"/&gt;<br />        &lt;/transportConnectors&gt;<br />    &lt;/broker&gt;<br />&lt;/beans&gt;<br /></pre><p>To connect to the JMS broker we can use either the "vm://myBroker" uri when connecting from the same JVM, which performs better, or stick to the TCP on the 61616 port for external use (outside of the JVM). The most worthwhile attribute is certainly the "persistent" attribute, because it can significantly lower the performance of our system. If message durability is not required I strongly suggest to set it to false.</p> <h2>ActiveMQ JMS Connection Pool</h2><p>Finally the JMS configuration that will enable us to connect to the embedded broker:</p><pre class="brush:xml; gutter:false;"><br />&lt;beans&gt;<br />    &lt;bean id="jmsConnectionFactory" <br />          class="org.apache.activemq.ActiveMQConnectionFactory"&gt;<br />        &lt;property name="brokerURL" value="vm://myBroker?create=false&amp;waitForStart=5000" /&gt;<br />    &lt;/bean&gt;<br /><br />    &lt;bean id="pooledConnectionFactory" <br />          class="org.apache.activemq.pool.PooledConnectionFactory" <br />          init-method="start" destroy-method="stop"&gt;<br />        &lt;property name="maxConnections" value="200" /&gt;<br />        &lt;property name="connectionFactory" ref="jmsConnectionFactory" /&gt;<br />    &lt;/bean&gt;<br /><br />    &lt;bean id="jmsConfig"<br />          class="org.apache.camel.component.jms.JmsConfiguration"&gt;<br />        &lt;property name="connectionFactory" ref="pooledConnectionFactory"/&gt;<br />        &lt;property name="concurrentConsumers" value="250"/&gt;<br />        &lt;property name="autoStartup" value="true" /&gt;<br />    &lt;/bean&gt;<br /><br />    &lt;bean id="activemq"<br />          class="org.apache.activemq.camel.component.ActiveMQComponent"&gt;<br />        &lt;property name="configuration" ref="jmsConfig"/&gt;<br />    &lt;/bean&gt;<br />&lt;/beans&gt;<br /></pre> <p>Here we are connecting using the intra-JVM protocol through the "vm://myBroker" uri. If connecting outside of the JVM, the connection factory would look like this:</p> <pre class="brush:xml; gutter:false;"><br />&lt;beans&gt;<br />    &lt;bean id="jmsConnectionFactory" <br />          class="org.apache.activemq.ActiveMQConnectionFactory"&gt;<br />        &lt;property name="brokerURL" value="tcp://localhost:61616" /&gt;<br />    &lt;/bean&gt;<br />    ...<br />&lt;/beans&gt;<br /></pre> <p>Important thing that should be taken into consideration is the "id" attribute (<strong>id="activemq"</strong>). Using this identifier we configured a Camel route. The route was called <strong>activemq:</strong>queue:outbox. If we had to configure another ActiveMQ connection, we would have to come up with a different id.</p>  <h2>The End</h2><p>I hope this post helped you understand the basics of Apache Camel. You can learn more from the great documentation on the <a href="http://camel.apache.org/examples.html">official Apache Camel site</a>.</p> <h2>Project on GitHub</h2> <p>If you want to try the example yourself, please feel free to check out the <a href="https://github.com/mbukowicz/Learning-Apache-Camel">project from GitHub</a>.</p>
+<img title="Apache Camel logo" src="/images/asynchronous-message-exchange-with-apache-camel/apache-camel.png" class="float-left" />
+
+<p>In this post I will show you how to get started with Apache Camel. Apache Camel is an integration technology, that enables you to connect different systems with different endpoint types. For example requests from system A exposed through RESTful WebService could be transformed and pushed to system B accessible through SOAP WebService.</p> 
+
+<div class="my-info" style="display: inline-block;">You can read more about the types of endpoints <a href="http://camel.apache.org/components.html">here</a>. </div> <p>To learn the basics we are going to build the following system:</p> 
+
+<img title="Architecture diagram big picture" src="/images/asynchronous-message-exchange-with-apache-camel/architecture_diagram_big_picture.png" class="img-center" />
+
+<p>As you can see, it is a standard two-way message exchange (request-response). Here is the sequence of steps in our application: 
+	<ol>  
+		<li>User requests the servlet.</li>  
+		<li>Servlet pushes the request to the messaging queue and hangs waiting for the response.</li>  
+		<li>On the other side a message processor pops the message from the queue and processes the request.</li>  
+		<li>When the answer is ready it is pushed back to the messaging queue.</li>  
+		<li>Servlet receives the response from the messaging system and shows the result to the user.</li>
+	</ol>
+</p> 
+
+<div class="my-info" style="float: left">TLDR; You can skip the blog entry and jump right away to the source code <a href="https://github.com/mbukowicz/Learning-Apache-Camel">posted on GitHub</a>. </div> 
+		
+<h2>More details</h2> 
+
+<p>Here is a more detailed view of the flow:</p> 
+
+<img title="Architecture diagram in detail" src="/images/asynchronous-message-exchange-with-apache-camel/architecture_diagram.png" class="img-center" />
+
+<ol style="clear: both">  
+	<li>ExampleServlet calls Camel route called "direct:inbox" and hangs waiting for a response.</li>  
+	<li>The route moves the request to a queue named "outbox".</li>  
+	<li>The other route listening on the "outbox" queue pops the message.</li>  
+	<li>Then the message goes through the connection spawned from the pool.</li>  
+	<li>Finally the process method on the ExampleProcessor class gets called.</li>  
+	<li>ExampleProcessor using the input body prepares response and pushes it back.</li>  
+	<li>The message goes further through a JMS connection...</li>  
+	<li>...and is put on the reply queue.</li>  
+	<li>Based on the id number of the message Apache Camel knows it received response for the request sent in the first step.</li>  
+	<li>ExampleServlet receives the response.</li>
+</ol> 
+
+<p>Once we learned the flow lets plan our TO-DO list:</p>
+
+<ul>  
+	<li>Configure Maven dependencies</li>  
+	<li>Load Spring Camel configuration from the web.xml</li>  
+	<li>Configure Apache Camel routes</li>  
+	<li>Implement ExampleServlet</li>  
+	<li>Implement ExampleProcessor</li>  
+	<li>Configure ActiveMQ embedded server (broker)</li>  
+	<li>Configure ActiveMQ JMS Connection Pool</li>
+</ul> 
+
+<h2>Configure Maven dependencies</h2>
+
+<p>Here are the dependencies that should be added to the <strong>pom.xml</strong>:</p>
+
+{% highlight xml %}
+<project>
+    ...
+    <properties>
+        <camel.version>2.11.0</camel.version>
+        <activemq.version>5.8.0</activemq.version>
+        <xbean.version>3.13</xbean.version>
+        <spring.version>3.1.4.RELEASE</spring.version>
+        <servlet.version>2.5</servlet.version>
+    </properties>
+    ...
+    <dependencies>
+        <!-- Apache Camel -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jms</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <!-- Servlets -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>${servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- the ActiveMQ client with connection pooling -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-client</artifactId>
+            <version>${activemq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-camel</artifactId>
+            <version>${activemq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-pool</artifactId>
+            <version>${activemq.version}</version>
+        </dependency>
+
+        <!-- the ActiveMQ broker (embedded ActiveMQ) -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-broker</artifactId>
+            <version>${activemq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-spring</artifactId>
+            <version>${activemq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-pool</artifactId>
+            <version>${activemq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-kahadb-store</artifactId>
+            <version>${activemq.version}</version>
+        </dependency>
+
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-spring</artifactId>
+            <version>${xbean.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+    </dependencies>
+    ...
+</project>
+{% endhighlight %}
+
+<h2>Loading Spring Camel configuration</h2>
+
+<p>To load Camel Spring configuration lets put a standard Spring Context loader inside <strong>web.xml</strong>:</p>
+
+{% highlight xml %}
+<web-app>
+    ...
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:camel-config.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    ...
+</web-app>
+{% endhighlight %}
+
+<h2>Apache Camel routes</h2>
+
+<p>Below are the routes that represent the flow in our system. The entry point is the <strong>direct:inbox</strong> route, which will be called from the servlet. When a route starts with <strong>direct:</strong> it means you can call it directly from your Java code. On the other side, if you want to have Java code as your target endpoint (like with ExampleProcessor) then your class needs to implement the <strong>org.apache.camel.Processor</strong>.</p>
+
+{% highlight xml %}
+<beans>
+    <import resource="classpath:activemq-connection-factory.xml" />
+    <import resource="classpath:activemq-embedded.xml" />
+
+    <camelContext id="exampleCamelContext" xmlns="http://camel.apache.org/schema/spring">
+        <template id="exampleProducerTemplate" />
+
+        <route>
+            <from uri="direct:inbox"/>
+            <to uri="activemq:queue:outbox" />
+        </route>
+
+        <route>
+            <from uri="activemq:queue:outbox" />
+            <to uri="exampleProcessor" />
+        </route>
+    </camelContext>
+
+    <bean id="exampleProcessor" class="example.ExampleProcessor" />
+</beans>
+{% endhighlight %}
+
+<h2>ExampleServlet</h2>
+
+<p>Here is the servlet that calls <strong>direct:inbox</strong> route using <strong>ProducerTemplate</strong> provided by Camel:</p>
+
+{% highlight java %}
+public class ExampleServlet extends HttpServlet {
+
+    private static final String DEFAULT_NAME = "World";
+
+    private ProducerTemplate producer;
+
+    @Override
+    public void init() throws ServletException {
+        producer = getSpringContext().getBean(
+                       "exampleProducerTemplate", ProducerTemplate.class);
+    }
+
+    @Override
+    public void service(ServletRequest req, ServletResponse res) 
+        throws ServletException, IOException {
+        
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+
+        String endpoint = "direct:inbox";
+        String input = getName(request);
+        String output = producer.requestBody(endpoint, input, String.class);
+
+        response.getOutputStream().println(output);
+    }
+
+    private String getName(HttpServletRequest request) {
+        String name = request.getParameter("name");
+        if(name != null) {
+            return name;
+        }
+        return DEFAULT_NAME;
+    }
+
+    private WebApplicationContext getSpringContext() {
+        ServletContext servletContext = getServletContext();
+        WebApplicationContext context = WebApplicationContextUtils.
+            getRequiredWebApplicationContext(servletContext);
+        return context;
+    }
+}
+{% endhighlight %}
+
+<h2>ExampleProcessor</h2>
+
+<p>ExampleProcessor is responsible for receiving a request and creating a response:</p>
+
+{% highlight java %}
+public class ExampleProcessor implements org.apache.camel.Processor {
+
+    @Override
+    public void process(Exchange exchange) throws Exception {
+        String name = exchange.getIn().getBody(String.class);
+
+        String response = "Hello, " + name + "!";
+
+        exchange.getOut().setBody(response);
+    }
+}
+{% endhighlight %}
+
+<h2>ActiveMQ embedded broker</h2>
+
+<p>Below is the configuration of the embedded ActiveMQ (<strong>activemq-embedded.xml</strong>):</p>
+
+{% highlight xml %}
+<beans>
+    <broker id="broker" brokerName="myBroker" useShutdownHook="false" useJmx="true"
+            persistent="false" dataDirectory="activemq-data"
+            xmlns="http://activemq.apache.org/schema/core">
+        <transportConnectors>
+            <transportConnector name="vm" uri="vm://myBroker"/>
+            <transportConnector name="tcp" uri="tcp://0.0.0.0:61616"/>
+        </transportConnectors>
+    </broker>
+</beans>
+{% endhighlight %}
+
+<p>To connect to the JMS broker we can use either the "vm://myBroker" uri when connecting from the same JVM, which performs better, or stick to the TCP on the 61616 port for external use (outside of the JVM). The most worthwhile attribute is certainly the "persistent" attribute, because it can significantly lower the performance of our system. If message durability is not required I strongly suggest to set it to false.</p> 
+
+<h2>ActiveMQ JMS Connection Pool</h2>
+
+<p>Finally the JMS configuration that will enable us to connect to the embedded broker:</p>
+
+{% highlight xml %}
+<beans>
+    <bean id="jmsConnectionFactory" 
+          class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="vm://myBroker?create=false&waitForStart=5000" />
+    </bean>
+
+    <bean id="pooledConnectionFactory" 
+          class="org.apache.activemq.pool.PooledConnectionFactory" 
+          init-method="start" destroy-method="stop">
+        <property name="maxConnections" value="200" />
+        <property name="connectionFactory" ref="jmsConnectionFactory" />
+    </bean>
+
+    <bean id="jmsConfig"
+          class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="pooledConnectionFactory"/>
+        <property name="concurrentConsumers" value="250"/>
+        <property name="autoStartup" value="true" />
+    </bean>
+
+    <bean id="activemq"
+          class="org.apache.activemq.camel.component.ActiveMQComponent">
+        <property name="configuration" ref="jmsConfig"/>
+    </bean>
+</beans>
+{% endhighlight %}
+
+<p>Here we are connecting using the intra-JVM protocol through the "vm://myBroker" uri. If connecting outside of the JVM, the connection factory would look like this:</p> 
+
+{% highlight xml %}
+<beans>
+    <bean id="jmsConnectionFactory" 
+          class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="tcp://localhost:61616" />
+    </bean>
+    ...
+</beans>
+{% endhighlight %}
+
+<p>Important thing that should be taken into consideration is the "id" attribute (<strong>id="activemq"</strong>). Using this identifier we configured a Camel route. The route was called <strong>activemq:</strong>queue:outbox. If we had to configure another ActiveMQ connection, we would have to come up with a different id.</p>  
+
+<h2>The End</h2>
+
+<p>I hope this post helped you understand the basics of Apache Camel. You can learn more from the great documentation on the <a href="http://camel.apache.org/examples.html">official Apache Camel site</a>.</p> 
+
+<h2>Project on GitHub</h2> 
+
+<p>If you want to try the example yourself, please feel free to check out the <a href="https://github.com/mbukowicz/Learning-Apache-Camel">project from GitHub</a>.</p>

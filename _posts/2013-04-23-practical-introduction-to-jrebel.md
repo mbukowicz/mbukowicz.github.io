@@ -30,7 +30,22 @@ blogger_orig_url: http://www.code-thrill.com/2013/04/practical-introduction-to-j
 <h2><cite>rebel.xml</cite></h2>
 
 <p>Here is an example of the <cite>rebel.xml</cite> file:</p>
-<pre class="brush:xml; gutter:false;"><br />&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;<br />&lt;application xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;<br />                xmlns=&quot;http://www.zeroturnaround.com&quot; <br />                xsi:schemaLocation=&quot;http://www.zeroturnaround.com http://www.zeroturnaround.com/alderaan/rebel-2_0.xsd&quot;&gt;<br />    &lt;classpath&gt;<br />        &lt;dir name=&quot;/absolute_path_to_your_project/target/classes&quot;&gt;&lt;/dir&gt;<br />    &lt;/classpath&gt;<br />    &lt;web&gt;<br />        &lt;link target=&quot;/&quot;&gt;<br />            &lt;dir name=&quot;/absolute_path_to_your_project/src/main/webapp&quot;&gt;&lt;/dir&gt;<br />        &lt;/link&gt;<br />    &lt;/web&gt;<br />&lt;/application&gt;<br /></pre> 
+
+{% highlight xml %}
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns="http://www.zeroturnaround.com" 
+             xsi:schemaLocation="http://www.zeroturnaround.com http://www.zeroturnaround.com/alderaan/rebel-2_0.xsd">
+    <classpath>
+        <dir name="/absolute_path_to_your_project/target/classes"></dir>
+    </classpath>
+    <web>
+        <link target="/">
+            <dir name="/absolute_path_to_your_project/src/main/webapp"></dir>
+        </link>
+    </web>
+</application>
+{% endhighlight %}
 
 <div class="my-info">You should put absolute paths, not relative ones, as the working directory from which JRebel will run may be hard to specify.</div> 
 
@@ -42,7 +57,15 @@ blogger_orig_url: http://www.code-thrill.com/2013/04/practical-introduction-to-j
 
 <p>Next thing is the JVM launch configuration. In the simplest case you have to add the <cite>-javaagent</cite> parameter either to your launch script or to the server start script:</p>
 
-<pre class="brush:plain; gutter:false;"><br />java<br />-javaagent:"/absolute_path_to_jrebel_installation/jrebel/jrebel.jar"<br />-Drebel.workspace.path="/absolute_path_to_eclipse_workspace"<br />-Drebel.log.file="/absolute_path_to_your_home_folder/.jrebel/jrebel.log"<br />-Drebel.properties="/absolute_path_to_your_home_folder/.jrebel/jrebel.properties"<br />...specific server options...<br />$SERVER_MAIN_CLASS<br /></pre>
+{% highlight text %}
+java
+-javaagent:"/absolute_path_to_jrebel_installation/jrebel/jrebel.jar"
+-Drebel.workspace.path="/absolute_path_to_eclipse_workspace"
+-Drebel.log.file="/absolute_path_to_your_home_folder/.jrebel/jrebel.log"
+-Drebel.properties="/absolute_path_to_your_home_folder/.jrebel/jrebel.properties"
+...specific server options...
+$SERVER_MAIN_CLASS
+{% endhighlight %}
 
 <p>Again, remember to specify absolute paths.</p> 
 
@@ -68,37 +91,59 @@ blogger_orig_url: http://www.code-thrill.com/2013/04/practical-introduction-to-j
 <h5>Replacing superclass</h5>
 <p>Lets start with this set of classes:</p>
 
-<pre class="brush:java; gutter:false;"><br />class A {}<br />class B {}<br />class C extends A {}<br /></pre>
+{% highlight java %}
+class A {}
+class B {}
+class C extends A {}
+{% endhighlight %}
 
 <p>If you replace the parent of C with B:</p>
 
-<pre class="brush:java; gutter:false;"><br />class C extends B {}<br /></pre>
+{% highlight java %}
+class C extends B {}
+{% endhighlight %}
 
 <p>...then you will get the following error:</p>
 
-<pre class="brush: plain; gutter:false;"><br />com.zeroturnaround.javarebel.SuperClassChangedError: <br />JRebel: Class 'C' superclass was changed from 'A' to 'B' and could not be reloaded!<br /></pre> 
+{% highlight text %}
+com.zeroturnaround.javarebel.SuperClassChangedError: 
+JRebel: Class 'C' superclass was changed from 'A' to 'B' and could not be reloaded!
+{% endhighlight %}
 
 <h5>Adding/removing implemented interfaces</h5>
 
 <p>As for the new/removed interfaces lets start with this 2 interfaces and a class:</p>
 
-<pre class="brush:java; gutter:false;"><br />interface A {}<br />interface B {}<br />class C implements A {}<br /></pre>
+{% highlight java %}
+interface A {}
+interface B {}
+class C implements A {}
+{% endhighlight %}
 
 <p>...and this piece of code using them:</p>
 
-<pre class="brush:java; gutter:false;"><br />A c = new C();<br /></pre>
+{% highlight java %}
+A c = new C();
+{% endhighlight %}
 
 <p>When we add a new interface implementation:</p>
 
-<pre class="brush:java; gutter:false;"><br />class C implements A, B {}<br /></pre>
+{% highlight java %}
+class C implements A, B {}
+{% endhighlight %}
 
 <p>...and tweak our code a little bit:</p>
 
-<pre class="brush:java; gutter:false;"><br />B c = new C();<br /></pre>
+{% highlight java %}
+B c = new C();
+{% endhighlight %}
 
 <p>...we get this error:</p>
 
-<pre class="brush: plain; gutter:false;"><br />java.lang.IncompatibleClassChangeError: <br />Class C does not implement the requested interface B<br /></pre> 
+{% highlight java %}
+java.lang.IncompatibleClassChangeError: 
+Class C does not implement the requested interface B
+{% endhighlight %}
 
 <p>As you can see JRebel is not a silver bullet and before buying it you should test it on your production projects first and learn about its limitations.</p> 
 
