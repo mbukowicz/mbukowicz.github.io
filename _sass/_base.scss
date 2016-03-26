@@ -203,6 +203,19 @@ pre {
     }
 }
 
+/**
+ * Tables
+ */
+ table {
+   border-collapse: collapse;
+   border: 1px solid #DDD;
+   margin-bottom: 15px;
+   th, td {
+     padding: 5px 15px;
+     border: 1px solid #DDD;
+   }
+ }
+
 .float-left {
     float: left;
     margin-right: 1em;
