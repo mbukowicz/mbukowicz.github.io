@@ -17,7 +17,7 @@ MongoDB stores documents in JSON-like format called BSON. However, JSON is used
 not only for storing and retrieving the documents. It is all over the MongoDB API,
 so you will be using JSON for writing queries as well.
 
-Matching model between relational and document DBs
+Differences in naming between relational and document DBs
 -----------------------------------------------------
 In case you are already familiar with some relational database (like Oracle)
 it is much easier to wrap your head around MongoDB when comparing concepts
@@ -54,7 +54,7 @@ To insert a new *document* into a *collection* you can use the *insert* command:
 > db.posts.insert(
   {
     "title": "First post",
-    "content": "Wow, that is so cool!"
+    "content": "Wow, this is so cool!"
   }
 )
 {% endhighlight %}
@@ -157,9 +157,10 @@ multiple queries**. Additionally, **with embedded documents you get atomic write
 whereas with reference documents we have to do some extra work to ensure
 consistency.
 
-To embedd or to not embedd?
+To embed or to not embed?
 ---------------------------
 You have to ask yourself a series of questions:
+
  * how often is the data used together (often -> go for embedded)
  * how many documents are expected to be embedded (more than a few hundred ->
    you should reconsider referencing)
@@ -319,15 +320,15 @@ Here is an example returning only titles of the blog posts:
 )
 {% endhighlight %}
 
-This query will not include fields other than *title* with the exception for the
-*_id* property:
+This query will return only *title* and *_id* fields:
 {% highlight plain %}
 { "_id": ObjectId(...), "title": "First post" }
 { "_id": ObjectId(...), "title": "Second post" }
 { "_id": ObjectId(...), "title": "Third post" }
 {% endhighlight %}
 
-This is the only case when we can use both inclusion and exclusion:
+This is the only case when we can use both inclusion and exclusion to get rid of
+*_id* field:
 {% highlight plain %}
 > db.posts.find( {}, { "title": true, "_id": false } )
 { "title": "First post" }
@@ -357,7 +358,7 @@ To reverse the order to be descending you can replace *1* with *-1* as in:
 
 Pagination
 ----------
-We can page results using *limit() and *skip()* methods. In order to fetch
+We can page results using *limit()* and *skip()* methods. In order to fetch
 the first 10 posts we can execute this command:
 {% highlight plain %}
 > db.posts.find().limit(10)
@@ -374,7 +375,7 @@ In relational databases we have this nice concept of aggregation using *GROUP BY
 together with *HAVING* and a number of aggregation functions like *AVG*, *SUM*, etc.
 It happens that MongoDB implements this concept using *aggregate()* method.
 
-As an example lets fetch the average blog posts ratings per to see, if our
+As an example lets fetch the average blog posts ratings per year to see, if our
 blog is getting better:
 {% highlight plain %}
 > db.posts.aggregate([
