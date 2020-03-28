@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Meld: my favourite diff tool"
+title:  "Meld: a useful diff tool"
 date:   2015-06-27 12:36:02
 categories: tools
 ---
@@ -15,7 +15,7 @@ categories: tools
 Meld can be installed on most of the operating systems:
 
   * Windows - using straightforward .msi installer available on the [Meld homepage](http://meldmerge.org)
-  * Linux - using package manager on most Linux distributions, e.g. for Ubuntu/Debian you can use this command: 
+  * Linux - using package manager on most Linux distributions, e.g. for Ubuntu/Debian you can use this command:
   ``` sudo apt-get install meld ```
   * Mac OSX - using [.dmg](https://github.com/yousseb/meld/releases) packaged by [yousseb](https://github.com/yousseb)
 
@@ -49,7 +49,7 @@ To merge changes from one directory to the other you can select the source direc
 
 <img src="/images/meld-my-favourite-diff-tool/directory-compare-after-copy-right.png" alt="Directories after copy right" />
 
-Then you will have to only delete files and directories missing in the source directory. 
+Then you will have to only delete files and directories missing in the source directory.
 
 <h2>Final thoughts</h2>
 
