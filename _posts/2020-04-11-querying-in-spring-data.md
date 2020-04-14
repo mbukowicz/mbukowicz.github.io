@@ -471,5 +471,5 @@ Still a good rule of thumb is to __use it as a last resort__. If it is unavoidab
 you have to do what you have to do, but considering the alternatives is advisable.
 
 <div class="my-info">
-For complete set of examples please check <a href="https://github.com/mbukowicz/spring-data-queries">the following GitHub repository</a>.
+For a complete set of examples please check <a href="https://github.com/mbukowicz/spring-data-queries">the following GitHub repository</a>.
 </div>
