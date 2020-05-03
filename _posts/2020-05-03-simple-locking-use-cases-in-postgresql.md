@@ -16,13 +16,12 @@ Intro
 Although relying on techniques based on optimistic locking
 ([like MVCC for example](/databases/2020/05/01/snapshot-isolation-in-postgresql.html))
 is usually a better choice, especially in terms of performance,
-there are other locking mechanisms that are worth understanding and they can be also
-put to good use depending on a scenario. Contrary to
+there are other locking mechanisms that are worth understanding. Contrary to
 optimistic strategies, where it is assumed that conflicting updates tend to happen
-rather rarely, locking may obviously introduce contention but it can also make
+rather rarely, locking introduces contention but it can also make
 the code simpler and easier to reason about.
 
-Moreover, in case of __PostgreSQL__ it __automatically acquires exclusive locks
+What's more, in case of __PostgreSQL__ it __automatically acquires exclusive locks
 on rows when they are updated or deleted__ so you might not get away without
 blocking anyway.
 
@@ -39,7 +38,9 @@ __in 2 steps__:
 
 {% highlight sql %}
 -- 1) read the current balance
-SELECT balance FROM accounts WHERE owner = 'Bob'; -- balance: 500$
+SELECT balance
+FROM accounts
+WHERE owner = 'Bob'; -- balance: 500$
 
 -- 2) increase the balance by 100$
 UPDATE accounts
@@ -74,7 +75,9 @@ FOR UPDATE; -- locks the row
 We then just need to update the locked row and commit the transaction:
 
 {% highlight sql %}
-UPDATE accounts SET balance = 600 WHERE owner = 'Bob';
+UPDATE accounts
+SET balance = 600
+WHERE owner = 'Bob';
 COMMIT; -- releases the lock
 {% endhighlight %}
 
@@ -90,7 +93,9 @@ can be usually done in an atomic fashion, so we can get the job done with __just
 one statement__:
 
 {% highlight sql %}
-UPDATE balance = balance + 100 WHERE owner = 'Bob';
+UPDATE accounts
+SET balance = balance + 100
+WHERE owner = 'Bob';
 {% endhighlight %}
 
 <div class="my-info">
@@ -112,8 +117,14 @@ into the picture. Imagine we need to __transfer 100$ from Bob to Alice__. We cou
 take advantage of what we have used so far and implement it like this:
 
 {% highlight sql %}
-UPDATE accounts SET balance = balance - 100 WHERE owner = 'Bob';
-UPDATE accounts SET balance = balance + 100 WHERE owner = 'Alice';
+UPDATE accounts
+SET balance = balance - 100
+WHERE owner = 'Bob';
+
+UPDATE accounts 
+SET balance = balance + 100
+WHERE owner = 'Alice';
+
 COMMIT;
 {% endhighlight %}
 
