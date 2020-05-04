@@ -16,9 +16,9 @@ Intro
 Although relying on techniques based on optimistic locking
 ([like MVCC for example](/databases/2020/05/01/snapshot-isolation-in-postgresql.html))
 is usually a better choice, especially in terms of performance,
-there are other locking mechanisms that are worth understanding. Contrary to
+there are other locking mechanisms that are worth consideration. Contrary to
 optimistic strategies, where it is assumed that conflicting updates tend to happen
-rather rarely, locking introduces contention but it can also make
+rather rarely, locking introduces contention. But it can also make
 the code simpler and easier to reason about.
 
 What's more, in case of __PostgreSQL__ it __automatically acquires exclusive locks
@@ -121,7 +121,7 @@ UPDATE accounts
 SET balance = balance - 100
 WHERE owner = 'Bob';
 
-UPDATE accounts 
+UPDATE accounts
 SET balance = balance + 100
 WHERE owner = 'Alice';
 

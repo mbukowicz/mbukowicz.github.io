@@ -18,10 +18,10 @@ NoSQL database you still need to __cater for proper isolation__ of operations do
 by your end users.
 
 Although the trade-offs made by the creators of each database can be slightly
-different the mechanics and limitations stay the same. If you understand
-the basic concepts and possible strategies for implementing isolation then
-later it can make your life much easier when you need to quickly get up to
-speed with a new database.
+different the mechanics and limitations stay the same. If you decide to
+spend time to better understand the basic concepts and possible strategies
+for implementing isolation then later it can make your life much easier when
+you need to quickly get up to speed with a new database.
 
 In this article we will take a look at how PostgreSQL solves the isolation problem
 by leveraging optimistic approach to locking.
@@ -29,8 +29,9 @@ by leveraging optimistic approach to locking.
 The problem
 -----------
 
-Even the most trivial-sounding problems require some understanding how different isolation levels are implemented in a particular database. Take for example the classic
-__problem of debit and credit in an account__.
+Even the most trivial-sounding problems require putting some thought into
+how different isolation levels are implemented in a particular database.
+Take for example the classic __problem of debit and credit in an account__.
 
 Let's start with something simple. Suppose we just want to add 100$ to Bob's account.
 We could write SQL code so that we first fetch the current value:
@@ -368,6 +369,17 @@ Now, depending on the isolation level, transaction #1 either:
 
 In this case, the second option sounds like a more reasonable thing to do. At least
 it should behave less surprising for Bob.
+
+PostgreSQL can make the distinction which value should be returned because it
+sees 2 versions of the record:
+
+* balance=500$, xmin=47, xmax=49
+* balance=700$, xmin=49
+
+Because PostgreSQL knows the xid of transaction #1 (xid=48) it can make an informed decision
+whether it should return the most recently committed record updated while it
+was still running (700$: xmin=49 > xid=48) or return an older version but consistent
+with the first select (500$: xmin=47 < xid=48 < xmax=49).
 
 
 Read more
