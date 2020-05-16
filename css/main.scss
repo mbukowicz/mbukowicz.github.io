@@ -56,13 +56,26 @@ $on-laptop:        800px;
   border-bottom: 0;
 }
 
-.site-header a:hover, .site-footer a:hover {
+.site-header a:hover {
   text-decoration: none;
+}
+
+.site-title:hover, .site-footer a:hover {
   color: #BEF !important;
 }
 
-.site-title, .page-link, .site-footer a {
+.site-title, .site-footer a {
   color: #FFF !important;
+}
+
+@media screen and (min-width: 601px) {
+  .page-link {
+    color: #FFF !important;
+  }
+  .page-link:hover {
+    text-decoration: none;
+    color: #BEF !important;
+  }
 }
 
 .site-wave {
