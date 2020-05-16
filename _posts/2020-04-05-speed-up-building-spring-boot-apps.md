@@ -6,7 +6,7 @@ categories: java spring-boot
 thumbnail: /images/speed-up-building-spring-boot-apps/thumbnail.jpg
 ---
 
-<img src="/images/speed-up-building-spring-boot-apps/rocket-launch-67643_1280.jpg" title="Rocket launch your Spring Boot development process" class="float-left" />
+<img src="/images/speed-up-building-spring-boot-apps/rocket-launch-67643_1280.jpg" title="Rocket launch your Spring Boot development process" class="float-left rounded" />
 
 The goal
 -----------------

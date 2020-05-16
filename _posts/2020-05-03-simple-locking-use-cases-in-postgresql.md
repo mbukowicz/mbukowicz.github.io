@@ -3,12 +3,12 @@ layout: post
 title: "Simple locking use-cases in PostgreSQL"
 date: 2020-05-03
 categories: databases
-thumbnail: /images/simple-locking-use-cases-in-postgresql/security-2168233_1280.jpg 
+thumbnail: /images/simple-locking-use-cases-in-postgresql/security-2168233_1280.jpg
 ---
 
 <div style="text-align: center; margin: 1em;">
   <img src="/images/simple-locking-use-cases-in-postgresql/security-2168233_1280.jpg"
-  title="Locks in PostgreSQL" />
+  title="Locks in PostgreSQL" class="rounded" />
 </div>
 
 Intro
