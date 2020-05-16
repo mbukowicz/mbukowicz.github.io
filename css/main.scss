@@ -15,7 +15,7 @@ $spacing-unit:     30px;
 
 $text-color:       #111;
 $background-color: #fdfdfd;
-$brand-color:      #039BE5;
+$brand-color:      #0099ff;
 
 $grey-color:       #828282;
 $grey-color-light: lighten($grey-color, 40%);
@@ -50,3 +50,36 @@ $on-laptop:        800px;
         "layout",
         "syntax-highlighting"
 ;
+
+.site-header {
+  background-color: #0099ff;
+  border-bottom: 0;
+}
+
+.site-header a:hover, .site-footer a:hover {
+  text-decoration: none;
+  color: #BEF !important;
+}
+
+.site-title, .page-link, .site-footer a {
+  color: #FFF !important;
+}
+
+.site-wave {
+  background: #FFF;
+  display: block;
+}
+
+.site-footer {
+  background-color: #0099ff;
+  border-top: 0;
+}
+
+.page-content a {
+  color: #0099ff;
+  text-decoration: none;
+}
+
+.page-content a:hover {
+  color: #0077dd;
+}
