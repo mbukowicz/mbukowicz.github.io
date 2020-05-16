@@ -3,6 +3,7 @@ layout: post
 title:  "Speed up building Spring Boot apps"
 date:   2020-04-05 16:11:19
 categories: java spring-boot
+thumbnail: /images/speed-up-building-spring-boot-apps/thumbnail.jpg
 ---
 
 <img src="/images/speed-up-building-spring-boot-apps/rocket-launch-67643_1280.jpg" title="Rocket launch your Spring Boot development process" class="float-left" />

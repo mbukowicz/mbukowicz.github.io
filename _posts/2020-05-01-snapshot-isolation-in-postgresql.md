@@ -3,6 +3,7 @@ layout: post
 title: "Snapshot isolation in PostgreSQL"
 date: 2020-05-01
 categories: databases
+thumbnail: /images/snapshot-isolation-in-postgresql/thumbnail.jpg
 ---
 
 <div style="text-align: center; margin: 1em;">

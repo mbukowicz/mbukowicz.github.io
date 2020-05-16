@@ -3,6 +3,7 @@ layout: post
 title:  "MongoDB Basics"
 date:   2016-03-25 15:16:15
 categories: no-sql mongo-db
+thumbnail: /images/mongodb-basics/thumbnail.png
 ---
 What is MongoDB?
 ----------------

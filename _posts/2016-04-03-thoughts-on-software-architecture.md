@@ -3,6 +3,7 @@ layout: post
 title:  "Thoughts on Software Architecture"
 date:   2016-04-03 18:27:38
 categories: architecture
+thumbnail: /images/thoughts-on-software-architecture/thumbnail.png
 ---
 I have just finished reading [Software Architecture for Developers](https://leanpub.com/software-architecture-for-developers) by Simon Brown. It is a very nice and well-structured book. Any aspiring or
 experienced architect should find something useful in it. In this post I

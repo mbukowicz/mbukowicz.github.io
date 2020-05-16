@@ -3,6 +3,7 @@ layout: post
 title:  "Comparing BigDecimals"
 date:   2015-11-14 12:00:15
 categories: java
+thumbnail: /images/comparing-big-decimals/thumbnail.jpg
 ---
 <h2>Surprising behaviour</h2>
 
@@ -14,12 +15,12 @@ BigDecimal b = new BigDecimal("2.0");
 System.out.println( a.equals(b) );
 {% endhighlight %}
 
-<p>It does not look suspicious and you would suspect it to 
+<p>It does not look suspicious and you would suspect it to
     simply render <strong>true</strong>, right?</p>
 
 <h2>Wrong!</h2>
 
-<p>Unfortunately, this prints out a big red 
+<p>Unfortunately, this prints out a big red
     <strong>false</strong>.</p>
 
 <h2>JavaDoc to the rescue</h2>
@@ -48,5 +49,5 @@ System.out.println( a.compareTo(b) == 0 ); // true
 
 <h2>TLDR;</h2>
 
-<p>When comparing BigDecimals use <strong>compareTo</strong> 
+<p>When comparing BigDecimals use <strong>compareTo</strong>
     instead of <strong>equals</strong>.</p>

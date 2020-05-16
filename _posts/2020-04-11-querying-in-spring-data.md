@@ -3,6 +3,7 @@ layout: post
 title:  "8 ways to write queries in Spring Data"
 date:   2020-04-13 18:59:19
 categories: java spring-data
+thumbnail: /images/8-ways-to-write-queries-in-spring-data/thumbnail.png
 ---
 
 <div style="text-align: center; margin: 1em;">

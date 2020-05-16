@@ -3,6 +3,7 @@ layout: post
 title: "Paging in Spring Data"
 date: 2020-05-12
 categories: java spring-data
+thumbnail: /images/paging-in-spring-data/thumbnail.jpg
 ---
 
 <div style="text-align: center; margin: 1em;">

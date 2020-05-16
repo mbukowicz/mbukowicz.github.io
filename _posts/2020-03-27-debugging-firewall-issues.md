@@ -3,6 +3,7 @@ layout: post
 title:  "Debugging firewall issues"
 date:   2020-03-27 12:27:43
 categories: networking tools
+thumbnail: /images/debugging-firewall-issues/thumbnail.png
 ---
 
 <img src="/images/debugging-firewall-issues/firewall-146529_1280.png" title="Firewall" class="float-left" />

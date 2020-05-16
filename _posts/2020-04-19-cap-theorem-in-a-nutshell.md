@@ -3,6 +3,7 @@ layout: post
 title: "CAP theorem in a nutshell"
 date: 2020-04-19
 categories: distributed-systems
+thumbnail: /images/cap-theorem-pragmatically/thumbnail.png
 ---
 
 <div style="text-align: center; margin: 1em;">

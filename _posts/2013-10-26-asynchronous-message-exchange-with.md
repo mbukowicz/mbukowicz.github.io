@@ -2,23 +2,23 @@
 layout: post
 title: Asynchronous message exchange with Apache Camel
 date: '2013-10-26T16:37:00.001+02:00'
-tags: 
+tags:
 modified_time: '2013-10-29T18:40:18.848+01:00'
-thumbnail: http://3.bp.blogspot.com/-U5BAUMAbXEY/Uk7pYScBYRI/AAAAAAAAAJM/_2kpvpKLf3M/s72-c/apache-camel.png
+thumbnail: /images/asynchronous-message-exchange-with-apache-camel/thumbnail.png
 blogger_id: tag:blogger.com,1999:blog-7932117927902690732.post-2504159450226512161
 blogger_orig_url: http://www.code-thrill.com/2013/10/asynchronous-message-exchange-with.html
 ---
-<h2>Introduction</h2> 
+<h2>Introduction</h2>
 
 <img title="Apache Camel logo" src="/images/asynchronous-message-exchange-with-apache-camel/apache-camel.png" class="float-left" />
 
-<p>In this post I will show you how to get started with Apache Camel. Apache Camel is an integration technology, that enables you to connect different systems with different endpoint types. For example requests from system A exposed through RESTful WebService could be transformed and pushed to system B accessible through SOAP WebService.</p> 
+<p>In this post I will show you how to get started with Apache Camel. Apache Camel is an integration technology, that enables you to connect different systems with different endpoint types. For example requests from system A exposed through RESTful WebService could be transformed and pushed to system B accessible through SOAP WebService.</p>
 
-<div class="my-info" style="display: inline-block;">You can read more about the types of endpoints <a href="http://camel.apache.org/components.html">here</a>. </div> <p>To learn the basics we are going to build the following system:</p> 
+<div class="my-info" style="display: inline-block;">You can read more about the types of endpoints <a href="http://camel.apache.org/components.html">here</a>. </div> <p>To learn the basics we are going to build the following system:</p>
 
 <img title="Architecture diagram big picture" src="/images/asynchronous-message-exchange-with-apache-camel/architecture_diagram_big_picture.png" class="img-center" />
 
-<p>As you can see, it is a standard two-way message exchange (request-response). Here is the sequence of steps in our application: 
+<p>As you can see, it is a standard two-way message exchange (request-response). Here is the sequence of steps in our application:
 	<ol>  
 		<li>User requests the servlet.</li>  
 		<li>Servlet pushes the request to the messaging queue and hangs waiting for the response.</li>  
@@ -26,13 +26,13 @@ blogger_orig_url: http://www.code-thrill.com/2013/10/asynchronous-message-exchan
 		<li>When the answer is ready it is pushed back to the messaging queue.</li>  
 		<li>Servlet receives the response from the messaging system and shows the result to the user.</li>
 	</ol>
-</p> 
+</p>
 
-<div class="my-info" style="float: left">TLDR; You can skip the blog entry and jump right away to the source code <a href="https://github.com/mbukowicz/Learning-Apache-Camel">posted on GitHub</a>. </div> 
-		
-<h2>More details</h2> 
+<div class="my-info" style="float: left">TLDR; You can skip the blog entry and jump right away to the source code <a href="https://github.com/mbukowicz/Learning-Apache-Camel">posted on GitHub</a>. </div>
 
-<p>Here is a more detailed view of the flow:</p> 
+<h2>More details</h2>
+
+<p>Here is a more detailed view of the flow:</p>
 
 <img title="Architecture diagram in detail" src="/images/asynchronous-message-exchange-with-apache-camel/architecture_diagram.png" class="img-center" />
 
@@ -47,7 +47,7 @@ blogger_orig_url: http://www.code-thrill.com/2013/10/asynchronous-message-exchan
 	<li>...and is put on the reply queue.</li>  
 	<li>Based on the id number of the message Apache Camel knows it received response for the request sent in the first step.</li>  
 	<li>ExampleServlet receives the response.</li>
-</ol> 
+</ol>
 
 <p>Once we learned the flow lets plan our TO-DO list:</p>
 
@@ -59,7 +59,7 @@ blogger_orig_url: http://www.code-thrill.com/2013/10/asynchronous-message-exchan
 	<li>Implement ExampleProcessor</li>  
 	<li>Configure ActiveMQ embedded server (broker)</li>  
 	<li>Configure ActiveMQ JMS Connection Pool</li>
-</ul> 
+</ul>
 
 <h2>Configure Maven dependencies</h2>
 
@@ -225,9 +225,9 @@ public class ExampleServlet extends HttpServlet {
     }
 
     @Override
-    public void service(ServletRequest req, ServletResponse res) 
+    public void service(ServletRequest req, ServletResponse res)
         throws ServletException, IOException {
-        
+
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
@@ -290,7 +290,7 @@ public class ExampleProcessor implements org.apache.camel.Processor {
 </beans>
 {% endhighlight %}
 
-<p>To connect to the JMS broker we can use either the "vm://myBroker" uri when connecting from the same JVM, which performs better, or stick to the TCP on the 61616 port for external use (outside of the JVM). The most worthwhile attribute is certainly the "persistent" attribute, because it can significantly lower the performance of our system. If message durability is not required I strongly suggest to set it to false.</p> 
+<p>To connect to the JMS broker we can use either the "vm://myBroker" uri when connecting from the same JVM, which performs better, or stick to the TCP on the 61616 port for external use (outside of the JVM). The most worthwhile attribute is certainly the "persistent" attribute, because it can significantly lower the performance of our system. If message durability is not required I strongly suggest to set it to false.</p>
 
 <h2>ActiveMQ JMS Connection Pool</h2>
 
@@ -298,13 +298,13 @@ public class ExampleProcessor implements org.apache.camel.Processor {
 
 {% highlight xml %}
 <beans>
-    <bean id="jmsConnectionFactory" 
+    <bean id="jmsConnectionFactory"
           class="org.apache.activemq.ActiveMQConnectionFactory">
         <property name="brokerURL" value="vm://myBroker?create=false&waitForStart=5000" />
     </bean>
 
-    <bean id="pooledConnectionFactory" 
-          class="org.apache.activemq.pool.PooledConnectionFactory" 
+    <bean id="pooledConnectionFactory"
+          class="org.apache.activemq.pool.PooledConnectionFactory"
           init-method="start" destroy-method="stop">
         <property name="maxConnections" value="200" />
         <property name="connectionFactory" ref="jmsConnectionFactory" />
@@ -324,11 +324,11 @@ public class ExampleProcessor implements org.apache.camel.Processor {
 </beans>
 {% endhighlight %}
 
-<p>Here we are connecting using the intra-JVM protocol through the "vm://myBroker" uri. If connecting outside of the JVM, the connection factory would look like this:</p> 
+<p>Here we are connecting using the intra-JVM protocol through the "vm://myBroker" uri. If connecting outside of the JVM, the connection factory would look like this:</p>
 
 {% highlight xml %}
 <beans>
-    <bean id="jmsConnectionFactory" 
+    <bean id="jmsConnectionFactory"
           class="org.apache.activemq.ActiveMQConnectionFactory">
         <property name="brokerURL" value="tcp://localhost:61616" />
     </bean>
@@ -340,8 +340,8 @@ public class ExampleProcessor implements org.apache.camel.Processor {
 
 <h2>The End</h2>
 
-<p>I hope this post helped you understand the basics of Apache Camel. You can learn more from the great documentation on the <a href="http://camel.apache.org/examples.html">official Apache Camel site</a>.</p> 
+<p>I hope this post helped you understand the basics of Apache Camel. You can learn more from the great documentation on the <a href="http://camel.apache.org/examples.html">official Apache Camel site</a>.</p>
 
-<h2>Project on GitHub</h2> 
+<h2>Project on GitHub</h2>
 
 <p>If you want to try the example yourself, please feel free to check out the <a href="https://github.com/mbukowicz/Learning-Apache-Camel">project from GitHub</a>.</p>

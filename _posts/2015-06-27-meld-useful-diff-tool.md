@@ -3,6 +3,7 @@ layout: post
 title:  "Meld: a useful diff tool"
 date:   2015-06-27 12:36:02
 categories: tools
+thumbnail: /images/meld-my-favourite-diff-tool/thumbnail.png
 ---
 <h2>Introduction</h2>
 

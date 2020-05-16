@@ -3,6 +3,7 @@ layout: post
 title: "Simple locking use-cases in PostgreSQL"
 date: 2020-05-03
 categories: databases
+thumbnail: /images/simple-locking-use-cases-in-postgresql/security-2168233_1280.jpg 
 ---
 
 <div style="text-align: center; margin: 1em;">
