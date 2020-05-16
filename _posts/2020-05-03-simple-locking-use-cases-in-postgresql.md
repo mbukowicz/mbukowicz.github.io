@@ -6,7 +6,7 @@ categories: databases
 thumbnail: /images/simple-locking-use-cases-in-postgresql/security-2168233_1280.jpg
 ---
 
-<div style="text-align: center; margin: 1em;">
+<div style="text-align: center;">
   <img src="/images/simple-locking-use-cases-in-postgresql/security-2168233_1280.jpg"
   title="Locks in PostgreSQL" class="rounded" />
 </div>

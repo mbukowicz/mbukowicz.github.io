@@ -6,7 +6,7 @@ categories: java spring-data
 thumbnail: /images/paging-in-spring-data/thumbnail.jpg
 ---
 
-<div style="text-align: center; margin: 1em;">
+<div style="text-align: center;">
   <img src="/images/paging-in-spring-data/book-1738609_1280.jpg"
   title="Pages in a book" class="rounded" />
 </div>

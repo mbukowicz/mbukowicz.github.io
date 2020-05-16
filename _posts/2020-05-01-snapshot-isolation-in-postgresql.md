@@ -6,7 +6,7 @@ categories: databases
 thumbnail: /images/snapshot-isolation-in-postgresql/thumbnail.jpg
 ---
 
-<div style="text-align: center; margin: 1em;">
+<div style="text-align: center;">
   <img src="/images/snapshot-isolation-in-postgresql/block-chain-2853046_1280.jpg"
   title="Fancy transactions flying around" class="rounded" />
 </div>

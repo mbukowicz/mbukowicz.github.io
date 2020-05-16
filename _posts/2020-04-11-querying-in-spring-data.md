@@ -6,7 +6,7 @@ categories: java spring-data
 thumbnail: /images/8-ways-to-write-queries-in-spring-data/thumbnail.png
 ---
 
-<div style="text-align: center; margin: 1em;">
+<div style="text-align: center;">
   <img src="/images/8-ways-to-write-queries-in-spring-data/database-149760_960_720.png"
   title="Spring logo on a database" />
 </div>
@@ -197,7 +197,7 @@ Unfortunately, this is mostly limited to strings as
 [stated in the docs](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example.usage) which boils down to number expressions (e.g. greater/lower than) not being supported:
 
 <img src="/images/8-ways-to-write-queries-in-spring-data/query-by-example-limitations.png"
-title="Query by example limitations" style="clear: both; margin: 1em;" />
+title="Query by example limitations" style="clear: both;" />
 
 
 5) Specifications

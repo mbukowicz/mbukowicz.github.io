@@ -6,7 +6,7 @@ categories: distributed-systems
 thumbnail: /images/cap-theorem-pragmatically/thumbnail.png
 ---
 
-<div style="text-align: center; margin: 1em;">
+<div style="text-align: center;">
   <img src="/images/cap-theorem-pragmatically/cap-diagram.png"
   title="CAP diagram" />
 </div>

@@ -13,7 +13,7 @@ $base-line-height: 1.5;
 
 $spacing-unit:     30px;
 
-$text-color:       #111;
+$text-color:       #0E1318;
 $background-color: #fdfdfd;
 $brand-color:      #0099ff;
 
@@ -95,10 +95,18 @@ $on-laptop:        800px;
 
 .page-content a {
   color: #33ADFF;
+}
+
+.page-content .post-list a {
+  color: #0E1318;
   text-decoration: none;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.page-content .post-list li {
+  margin-bottom: 40px;
 }
 
 .page-content a:hover {
@@ -123,7 +131,11 @@ $on-laptop:        800px;
 
 .post-meta {
   display: inline-block;
-  margin-top: 5px;
+  margin-top: 8px;
+}
+
+.post-link {
+  font-size: 20px;
 }
 
 @media screen and (max-width: 600px) {
