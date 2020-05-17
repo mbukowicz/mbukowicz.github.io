@@ -134,9 +134,13 @@ $on-laptop:        800px;
   line-height: 1.2;
 }
 
-.post-meta {
+.post-list .post-meta {
   display: inline-block;
   margin-top: 8px;
+}
+
+.post-header .post-meta {
+  margin-left: 2px;
 }
 
 .post-link {
