@@ -125,8 +125,13 @@ $on-laptop:        800px;
   margin-top: 15px;
 }
 
+.post-title {
+  line-height: 1.2;
+}
+
 .post-content h2 {
-  margin-top: 30px;
+  margin-top: 40px;
+  line-height: 1.2;
 }
 
 .post-meta {
@@ -148,7 +153,7 @@ $on-laptop:        800px;
   .site-title {
     font-size: 22px;
   }
-  .post-meta {
+  .post-list .post-meta {
     margin-top: 10px;
   }
   .post-link {
@@ -160,6 +165,9 @@ $on-laptop:        800px;
   }
   .footer-col:first-child {
     margin-bottom: 40px;
+  }
+  .site-header .wrapper {
+    padding-bottom: 10px;
   }
 }
 
