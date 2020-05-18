@@ -135,7 +135,7 @@ Deadlock
 It pleases the eye with its simplicity, but there is one caveat.
 If two transactions interleave in a certain way we could run into __a deadlock__:
 
-<div style="width: 50%; float: left;">
+<div style="width: 49%; float: left; margin-right: 2%">
 {% highlight sql %}
 -- TRANSACTION #1
 
@@ -155,7 +155,7 @@ WHERE owner = 'Alice';
 {% endhighlight %}
 </div>
 
-<div style="width: 50%; float: left;">
+<div style="width: 49%; float: left;">
 {% highlight sql %}
 -- TRANSACTION #2
 

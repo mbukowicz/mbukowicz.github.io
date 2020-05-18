@@ -59,7 +59,7 @@ in-between__ and some data would get lost. It means that an overlapping
 transaction aiming to increase Bob's balance by 300$ could finish successfully,
 only that Bob would not receive his money.
 
-<div style="width: 50%; float: left;">
+<div style="width: 49%; float: left; margin-right: 2%;">
 {% highlight sql %}
 -- TRANSACTION #1
 
@@ -89,7 +89,7 @@ COMMIT;
 {% endhighlight %}
 </div>
 
-<div style="width: 50%; float: left;">
+<div style="width: 49%; float: left;">
 {% highlight sql %}
 -- TRANSACTION #2
 
@@ -247,9 +247,26 @@ that another transaction has just modified the record that
 the current transaction was about to update. Active transactions are
 described in PostgreSQL in the following format:
 
-xmin | : | xmax | : | xip_list |
------|---|------|---|----------|
-earliest active transaction | | first as-yet-unassigned transaction | | list of in-progress transactions |
+<table class="reduced-padding centered">
+  <thead>
+    <tr>
+      <th>xmin</th>
+      <th>:</th>
+      <th>xmax</th>
+      <th>:</th>
+      <th>xip_list</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>earliest active transaction</td>
+      <td>&nbsp;</td>
+      <td>first as-yet-unassigned transaction</td>
+      <td>&nbsp;</td>
+      <td>list of in-progress transactions</td>
+    </tr>
+  </tbody>
+</table>
 
 In the simplest case all transactions have already finished (some finished
 successfully and some were aborted):
