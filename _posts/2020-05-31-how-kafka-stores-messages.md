@@ -357,7 +357,7 @@ title="Two new messages batched" style="clear: both;" />
 Offsets
 -------
 
-You may have noticed that this concept of <code>offsets</code>
+You may have also noticed that this concept of <code>offsets</code>
 popped up several times already.
 
 __Offset is a unique record identifier__ which allows to quickly find
@@ -385,7 +385,7 @@ Another thing is that already __stored records cannot be modified__ (although
 they can be deleted but more on that later).
 
 I guess it all boils down to architectural decisions that Kafka creators had
-to make. And setting this limitations should simplify some
+to make. And setting this limitations should have simplified some of
 performance and replication considerations.
 
 
@@ -401,7 +401,8 @@ create a new segment log file after some time is elapsed
 * <code>log.segment.bytes</code> to limit segment log file size in bytes
 
 For example, if you set <code>log.roll.hours = 3</code> then every 3 hours
-a new log segment file will be created.
+a new log segment file will be created (unless of course
+<code>log.segment.bytes</code> gets exceeded sooner).
 
 Alright, but you may be asking yourself, why those log segments
 are needed at all?
@@ -450,10 +451,11 @@ flushing to the operating system__.
 
 The recommended approach to guaranteeing durability is to __instead rely
 on replication__, meaning spreading data across many machines/disks
-on the application level.
+at the application level.
 
 But if durability is of highest importance to you then it is still possible
-to force fsync with these properties (keep in mind performance will likely degrade):
+to force fsync with the following properties (keep in mind performance
+will likely degrade):
 
 * <code>flush.messages</code> - data will be flushed to disk ever N-th message
 
@@ -461,7 +463,7 @@ to force fsync with these properties (keep in mind performance will likely degra
 
 What is important, is that a hybrid approach is possible to achieve. As an example,
 you could rely on OS to do the flushing for most of the topics but
-explicitly fsync on topics where you refuse to compromise on durability.
+set up explicit fsync on topics where you refuse to compromise on durability.
 
 So if you are a little bit paranoid about a certain topic you may force fsync
 after every single message:
