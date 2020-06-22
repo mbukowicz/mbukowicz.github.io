@@ -217,7 +217,7 @@ and also cheaper from the operational perspective.
 
 But then you need to deal with the 'noisy neighbour' problem where one
 application hammers your Kafka cluster disturbing work of other applications.
-It requires some more though in the form of capacity planning and
+It requires some more thought in the form of capacity planning and
 [setting up quotas](https://kafka.apache.org/documentation/#design_quotas)
 (i.e. limits) on how much resources (e.g. network bandwidth)
 a particular client can use.
