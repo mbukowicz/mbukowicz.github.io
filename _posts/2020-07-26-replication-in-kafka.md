@@ -136,7 +136,7 @@ locality and fetch messages from a follower:
 <img src="/images/replication-in-kafka/consumers-read-from-follower.png"
 title="Consumer read from follower" style="clear: both;" />
 
-If consumer and follower reside in the same datacenter then this could
+So if a consumer and a follower reside in the same datacenter then this could
 potentially help us reduce latency.
 
 Fortunately, it recently became also possible to
@@ -160,10 +160,10 @@ replica to become a leader at the cost of potential data loss.</div>
 
 So for example, if broker 3 becomes slow (e.g. due to infrastructure-related
 problems or something as trivial as a GC pause) then it falls out of
-in-sync replica set (ISRs):
+in-sync replicas set:
 
 <img src="/images/replication-in-kafka/broker3-out-of-sync.png"
-title="Broker 3 drops out of in-sync replica set" style="clear: both;" />
+title="Broker 3 drops out of in-sync replicas set" style="clear: both;" />
 
 And this means it is not eligible to become a leader until it caughts up.
 
@@ -245,6 +245,5 @@ Learn more
 ----------
 
 We have just touched upon the topic of replication in Kafka, but if
-you have around 37 minutes more to spare (or less with higher playback speeds ;))
-then I recommend to [watch this talk by Jun Rao from Confluent](https://www.youtube.com/watch?v=li2aowPnezA). Jun explores replication and leader election in great
-detail.
+you have around 37 minutes to spare then I recommend
+[watching this talk by Jun Rao from Confluent](https://www.youtube.com/watch?v=li2aowPnezA). Jun explores replication and leader election in great detail.
