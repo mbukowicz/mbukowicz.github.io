@@ -165,7 +165,7 @@ in-sync replicas set:
 <img src="/images/replication-in-kafka/broker3-out-of-sync.png"
 title="Broker 3 drops out of in-sync replicas set" style="clear: both;" />
 
-And this means it is not eligible to become a leader until it caughts up.
+And this means it is not eligible to become a leader until it catches up.
 
 It also means that if ```min.insync.replicas``` was set to a value
 higher than ```2``` then all consecutive writes are going to fail with
