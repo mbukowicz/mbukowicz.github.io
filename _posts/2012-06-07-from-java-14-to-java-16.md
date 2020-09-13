@@ -18,4 +18,4 @@ blogger_orig_url: http://www.code-thrill.com/2012/06/from-java-14-to-java-16.htm
 	<li><a href="http://www.slideshare.net/MateuszBukowicz/what-is-so-great-about-java-6">English version translated from Polish</a>, so everyone can benefit from my effort</li>
 </ul>
 
-<p>I hope you would find this presentation useful as a revision or as a mean to convince your client or boss to finally do an upgrade. By the way, if you want the original version of the presentation, where images' quality is much higher (slideshare messed it up a little bit), please let me know. I think it would be also appropriate to assure me, that you would not use it to earn money by yourself in any other way than making your boss happy and getting a raise ;].</p>
+<p>I hope you would find this presentation useful as a revision or as a mean to convince your client or boss to finally do an upgrade. By the way, if you want the original version of the presentation, where images' quality is much higher (slideshare messed it up a little bit), please let me know.</p>
