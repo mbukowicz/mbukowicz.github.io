@@ -4,6 +4,7 @@ title: "Implementing a Kafka consumer in Java"
 date: 2020-09-12
 categories: kafka
 thumbnail: /images/kafka-consumer/thumbnail.png
+comments: true
 ---
 
 <div style="text-align: center;">
