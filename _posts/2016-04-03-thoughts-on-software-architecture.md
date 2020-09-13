@@ -102,18 +102,8 @@ how the [techtribes.je project](http://techtribes.je) is visualised in Structuri
 
 Software architecture checklist
 -------------------------------
-Brown provides a great checklist that can be run against the C4 model (this is
-an excerpt from his book):
+Brown provides [a great checklist that can be run against the C4 model](https://c4model.com/review/).
 
-* I can see and understand the solution from multiple levels of abstraction.
-* I understand the big picture; including who is going to use the system (e.g. roles, personas, etc) and what the dependencies are on the existing IT environment (e.g. existing systems).
-* I understand the logical containers and the high-level technology choices that have been made (e.g. web servers, databases, etc).
-* I understand what the major components are and how they are used to satisfy the important user stories/use cases/features/etc.
-* I understand what all of the components are, what their responsibilities are and can see that all components have a home.
-* I understand the notation, conventions, colour coding, etc used on the diagrams.
-* I can see the traceability between diagrams and diagramming elements have been used consistently.
-* I understand what the business domain is and can see a high-level view of the functionality that the software system provides.
-* I understand the implementation strategy (frameworks, libraries, APIs, etc) and can almost visualise how the system will be or has been implemented.
 
 Some more stuff to ponder on...
 -------------------------------
