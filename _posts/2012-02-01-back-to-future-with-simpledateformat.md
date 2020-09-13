@@ -11,6 +11,7 @@ blogger_orig_url: http://www.code-thrill.com/2012/02/back-to-future-with-simpled
 <img src="/images/back-to-future-with-simpledateformat/back-to-the-future.jpg" title="Back to the future" class="float-left" />
 <p>Some time ago I had to fix a really strange bug in a Java web application. A date displayed to the user was going crazy. Where it should be 20 November 2011 it was something like 12 January 510 or 4 October 3040. The app was obviously broken...</p>
 <p>I checked the code and at first it looked all right. There was an utility class looking something like that:</p>
+
 {% highlight java %}
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -129,9 +130,3 @@ public class TimeUtil {
 
 <h2>Summary</h2>
 <p>To sum up, if your application works in a concurrent environment, you should always check your classes for thread-safety, especially when using Java Formatters.</p>
-
-<h2>Bonus Exercise</h2>
-<p>Why not check your code right now? Here is a regular expression that will do it for you:</p>
-{% highlight text %}
-static\s+(final\s+)?\w*Formatter
-{% endhighlight %}
