@@ -130,14 +130,13 @@ And in the face of a network partition this can make problem resolution
 a bit easier as it reduces the number of moving parts (write and read operations
 are performed on the same broker).
 
-On the other hand, it could make sense to take advantage of data
-locality and fetch messages from a follower:
+On the other hand, it could make sense to fetch messages from a follower:
 
 <img src="/images/replication-in-kafka/consumers-read-from-follower.png"
 title="Consumer read from follower" style="clear: both;" />
 
 So if a consumer and a follower reside in the same datacenter then this could
-potentially help us reduce latency.
+potentially help us reduce expensive cross-datacenter communication.
 
 Fortunately, it recently became also possible to
 [read messages from a follower](https://cwiki.apache.org/confluence/display/KAFKA/KIP-392%3A+Allow+consumers+to+fetch+from+closest+replica). David Arthur from
